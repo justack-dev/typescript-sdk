@@ -14,7 +14,7 @@ import {
   WebSocketConnection,
   createWebSocketConnection,
 } from "../websocket/connection";
-import { TimeoutError, SessionExpiredError } from "../errors";
+import { BadRequestError, TimeoutError, SessionExpiredError } from "../errors";
 import { request } from "../utils/fetch";
 import { paginate } from "../pagination";
 import { transformMessage } from "../utils/transform";
@@ -239,6 +239,12 @@ export class Session {
     question: string,
     options: AskOptions<T> & { inputs: T }
   ): Promise<ResponseFromInputs<T>> {
+    if (this.recipients.length === 0) {
+      throw new BadRequestError(
+        "Cannot ask without recipients. Add recipients when creating or resuming the session."
+      );
+    }
+
     const connection = await this.ensureConnected();
     const timeout = options.timeout ?? DEFAULT_ASK_TIMEOUT;
 

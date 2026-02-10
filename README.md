@@ -1,50 +1,26 @@
 # @justack/sdk
 
-TypeScript SDK for the Justack Human-in-the-Loop API. Enable your AI agents to pause for human input, log progress, and handle approvals during long-running tasks.
+Typesafe human-in-the-loop API for AI agents. Ask humans questions with typed inputs, get typed responses.
+
+```typescript
+const session = await client.sessions.create({
+  name: 'Deploy',
+  recipients: [{ email: 'reviewer@company.com' }],
+});
+
+const { env, approve } = await session.ask('Ship it?', {
+  inputs: [
+    { type: 'select', name: 'env', options: ['staging', 'production'] },
+    { type: 'confirm', name: 'approve' },
+  ] as const,
+});
+// env: string, approve: boolean — inferred from inputs
+```
 
 ## Installation
 
 ```bash
 npm install @justack/sdk
-# or
-pnpm add @justack/sdk
-```
-
-## Quick Start
-
-Add human-in-the-loop to your AI agent:
-
-```typescript
-import { JustackClient } from '@justack/sdk';
-
-const client = new JustackClient({ apiKey: process.env.JUSTACK_API_KEY });
-
-// Create a recipient and get their inbox URL
-const recipient = await client.recipients.create({ name: 'Reviewer' });
-const { url } = await client.recipients.getInviteUrl(recipient.recipientId);
-console.log(`Share with reviewer: ${url}`);
-
-// Create a session
-const session = await client.sessions.create({
-  name: 'Deploy Review',
-  recipients: [recipient.recipientId],
-});
-
-// Log progress
-await session.log('All tests passed. Ready to deploy.');
-
-// Ask for approval - blocks until human responds
-const { approved } = await session.ask('Deploy to production?', {
-  inputs: [{ type: 'confirm', name: 'approved' }] as const,
-});
-
-if (approved) {
-  console.log('Deploying...');
-} else {
-  console.log('Deployment cancelled');
-}
-
-session.close();
 ```
 
 ## Core Concepts

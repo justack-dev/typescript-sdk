@@ -1,6 +1,6 @@
 {
   "name": "@justack/sdk",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "TypeScript SDK for the Justack Human-in-the-Loop API",
   "type": "module",
   "main": "./dist/index.cjs",
