@@ -6,39 +6,26 @@
  * Shows log messages, ask inputs, and session cleanup.
  *
  * Usage:
- *   JUSTACK_API_KEY=jstk_xxx npx tsx examples/ping-pong.ts
- *
- * Dev mode:
- *   JUSTACK_API_KEY=jstk_xxx JUSTACK_API_URL=http://localhost:8787/v1 npx tsx examples/ping-pong.ts
+ *   JUSTACK_API_KEY=jstk_xxx npx tsx examples/ping-pong.ts user@example.com
  */
 
-import { JustackClient } from "../src/index";
+import { JustackClient } from "@justack/sdk";
 
 const apiKey = process.env.JUSTACK_API_KEY;
-if (!apiKey) {
-  console.error("Error: JUSTACK_API_KEY environment variable is required");
+const email = process.argv[2];
+
+if (!apiKey || !email) {
+  console.error("Usage: JUSTACK_API_KEY=jstk_xxx npx tsx examples/ping-pong.ts <email>");
   process.exit(1);
 }
 
-const client = new JustackClient({
-  apiKey,
-  baseUrl: process.env.JUSTACK_API_URL,
-});
+const client = new JustackClient({ apiKey });
 
 async function main() {
-  // Create or find a recipient
-  const recipient = await client.recipients.create({
-    name: "Pong Player",
-    externalId: "ping-pong-user",
-  });
-
-  const { url } = await client.recipients.getInviteUrl(recipient.recipientId);
-  console.log(`\nOpen this URL to play: ${url}\n`);
-
   // Create session
   const session = await client.sessions.create({
     name: "Ping Pong Game",
-    recipients: [recipient.recipientId],
+    recipients: [email],
   });
 
   console.log("Game started! Waiting for responses...\n");

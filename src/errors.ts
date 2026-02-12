@@ -13,15 +13,6 @@ export type ErrorCode =
   | "WEBSOCKET_ERROR"
   | "SESSION_EXPIRED";
 
-// Extend Error interface for V8's captureStackTrace
-interface ErrorConstructorWithCapture extends ErrorConstructor {
-  captureStackTrace?(
-    targetObject: object,
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-    constructorOpt?: Function
-  ): void;
-}
-
 /**
  * Base error class for all Justack SDK errors.
  */
@@ -36,9 +27,8 @@ export class JustackError extends Error {
     this.name = "JustackError";
 
     // Maintains proper stack trace in V8
-    const ErrorWithCapture = Error as ErrorConstructorWithCapture;
-    if (ErrorWithCapture.captureStackTrace) {
-      ErrorWithCapture.captureStackTrace(this, this.constructor);
+    if ("captureStackTrace" in Error) {
+      Error.captureStackTrace(this, this.constructor);
     }
   }
 }

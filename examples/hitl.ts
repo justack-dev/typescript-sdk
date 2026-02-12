@@ -6,52 +6,34 @@
  * for human approval before taking an action.
  *
  * Usage:
- *   JUSTACK_API_KEY=jstk_xxx npx tsx examples/hitl.ts
- *
- * Dev mode:
- *   JUSTACK_API_KEY=jstk_xxx JUSTACK_API_URL=http://localhost:8787/v1 npx tsx examples/hitl.ts
+ *   JUSTACK_API_KEY=jstk_xxx npx tsx examples/hitl.ts user@example.com
  */
 
-import { JustackClient } from "../src/index";
+import { JustackClient } from "@justack/sdk";
 
 const apiKey = process.env.JUSTACK_API_KEY;
-if (!apiKey) {
-  console.error("Error: JUSTACK_API_KEY environment variable is required");
+const email = process.argv[2];
+
+if (!apiKey || !email) {
+  console.error("Usage: JUSTACK_API_KEY=jstk_xxx npx tsx examples/hitl.ts <email>");
   process.exit(1);
 }
 
-const client = new JustackClient({
-  apiKey,
-  baseUrl: process.env.JUSTACK_API_URL,
-});
+const client = new JustackClient({ apiKey });
 
 async function main() {
-  // Create a recipient (or use an existing one)
-  const recipient = await client.recipients.create({
-    name: "Developer",
-    externalId: "hitl-example-user",
-  });
-
-  // Get the invite URL to share with the human
-  const { url: inviteUrl } = await client.recipients.getInviteUrl(
-    recipient.recipientId
-  );
-  console.log(`\nShare this URL with your reviewer: ${inviteUrl}\n`);
-
   // Create a session for this interaction
   const session = await client.sessions.create({
     name: "Deploy to Production",
-    recipients: [recipient.recipientId],
+    recipients: [email],
   });
-
-  console.log("Session created. Waiting for human approval...\n");
 
   try {
     // Log progress to keep the human informed
     await session.log("## Deployment Ready\n\nAll tests passed. Ready to deploy.");
 
     // Ask for approval - this blocks until the human responds
-    const { approved, notes } = await session.ask(
+    const response = await session.ask(
       "Should I deploy **v2.1.0** to production?",
       {
         inputs: [
@@ -69,6 +51,8 @@ async function main() {
         ] as const,
       }
     );
+    console.log(response)
+    const {notes, approved} = response;
 
     // Act on the human's decision
     if (approved) {

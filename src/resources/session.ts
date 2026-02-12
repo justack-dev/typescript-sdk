@@ -133,7 +133,9 @@ export class Session {
     });
 
     // Handle message updates (when ask message receives a response)
-    this.connection.on("messageUpdated", (message: Message) => {
+    // The server sends snake_case data, so transform to camelCase SDK format
+    this.connection.on("messageUpdated", (raw: Message) => {
+      const message = transformMessage(raw as unknown as ApiMessage);
       if (message.type === "ask" && message.responseContent !== null) {
         this.handleResponse(message);
       }
